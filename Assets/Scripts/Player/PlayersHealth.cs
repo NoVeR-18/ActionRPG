@@ -1,30 +1,45 @@
 ﻿using UnityEngine;
-using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 
-public class PlayersHealth : MonoBehaviour{
+public class PlayersHealth : MonoBehaviour, IDamageable
+{
+    public int maxHealth = 100;
     [SerializeField]
-    static public int MaxHealth = 100;
-    static public int curHealth = 100;
-    void Start(){
-        
+    private int currentHealth;
+
+    [SerializeField]
+    private Slider healthSlider;
+
+    private void Start()
+    {
+        currentHealth = maxHealth;
+        UpdateHealthUI();
     }
-    void Update(){
-        AddjustCurrentHealth(0);
-        if (curHealth <= 0){
-           SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+
+    public void ApplyDamage(int Damage)
+    {
+        currentHealth -= Damage;
+
+        if (currentHealth <= 0)
+        {
+            Die();
+        }
+        UpdateHealthUI();
+    }
+
+    private void UpdateHealthUI()
+    {
+        if (healthSlider != null)
+        {
+            float healthPercentage = (float)currentHealth / maxHealth;
+            healthSlider.value = healthPercentage;
         }
     }
 
-    public void AddjustCurrentHealth(int adj)
+    public void Die()
     {
-        curHealth -= adj;
-        if (curHealth < 0)
-            curHealth = 0;
-
-        if (curHealth > MaxHealth)
-            curHealth = MaxHealth;
-
-        if (MaxHealth < 1)
-            MaxHealth = 1;
+        Debug.Log("Object has died.");
+        Destroy(gameObject);
     }
+
 }

@@ -1,6 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
 public class PlayerAttack : PersonAttack
 {
@@ -9,21 +7,22 @@ public class PlayerAttack : PersonAttack
         damageToEnemy = 10;
     }
 
-    protected override void OnTriggerStay2D(Collider2D collider)
-    {
-        if (collider.tag == "Enemy" && isAttacking)
-            collider.GetComponent<EnemyHealth>().AddjustCurrentHealth(damageToEnemy);
-    }
+    //protected override void OnTriggerStay2D(Collider2D collider)
+    //{
+    //    if (collider.tag == "Enemy" && isAttacking)
+    //        collider.GetComponent<IDamageable>().ApplyDamage(damageToEnemy);
+    //}
     protected override bool Attacking()
     {
         if (Input.GetKeyDown("f") && attackTimer == 0)
         {
-            animator.SetBool("attack", true);
+            PerformAttack();
+            animator.SetTrigger("Attack");
             return true;
         }
         else
         {
-            animator.SetBool("attack", false);
+            //animator.SetBool("attack", false);
             return false;
         }
     }

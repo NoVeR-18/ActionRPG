@@ -1,8 +1,6 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
-public class PersonAttack : MonoBehaviour
+public class PersonAttack : OverlapAttack
 {
     [SerializeField]
     protected float attackTimer;
@@ -25,6 +23,7 @@ public class PersonAttack : MonoBehaviour
     {
         if (isAttacking)
         {
+            //animator.SetBool("attack", true);
         }
         else
         {
@@ -46,7 +45,6 @@ public class PersonAttack : MonoBehaviour
         }
         if (Attacking())
         {
-            //animator.SetBool("attack", true);
             isAttacking = true;
             attackTimer = coolDown;
         }
@@ -55,16 +53,13 @@ public class PersonAttack : MonoBehaviour
             isAttacking = false;
         }
     }
-    protected virtual void OnTriggerStay2D(Collider2D collider)
-    {
-        if (collider.tag == "Player" && isAttacking)
-            collider.GetComponent<PlayersHealth>().AddjustCurrentHealth(damageToEnemy);
-    }
+    //protected virtual void OnTriggerStay2D(Collider2D collider)
+    //{
+    //    if (collider.tag == "Player" && isAttacking)
+    //        collider.GetComponent<IDamageable>().ApplyDamage(damageToEnemy);
+    //}
     protected virtual bool Attacking()
     {
-        if (attackTimer == 0)
-            return true;
-        else
-            return false;
+        return false;
     }
 }

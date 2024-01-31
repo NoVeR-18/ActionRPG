@@ -1,30 +1,41 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.UI;
 
-public class EnemyHealth : MonoBehaviour
+public class EnemyHealth : MonoBehaviour, IDamageable
 {
-    static public int maxHealth = 100;
-    static public int curHealth = 100;
-    public int Hp; 
+    public int maxHealth = 100;
+    [SerializeField]
+    private int currentHealth;
+    [SerializeField]
+    private Image hpImage;
     void Start()
     {
-        
-    }
-    void Update()
-    {
-        Hp = curHealth;
-        if (curHealth > maxHealth)
-            curHealth = maxHealth;
+        currentHealth = maxHealth;
     }
 
-    public void AddjustCurrentHealth(int adj)
+    public void ApplyDamage(int Damage)
     {
-        curHealth -= adj; if (curHealth <= 0)
+        currentHealth -= Damage;
+
+        if (currentHealth <= 0)
         {
-            Destroy(gameObject);
+            Die();
         }
+        UpdateHealthUI();
+    }
+    private void UpdateHealthUI()
+    {
+        if (hpImage != null)
+        {
+            float healthPercentage = (float)currentHealth / maxHealth;
+            //hpImage.fillAmount = Mathf.Min(1, (Time.time - lastAttackTime) / AtackSpeed)
+            hpImage.fillAmount = healthPercentage;
+        }
+    }
 
+    public void Die()
+    {
+        Debug.Log("Object has died.");
+        Destroy(gameObject);
     }
 }

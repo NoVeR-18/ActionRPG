@@ -1,70 +1,120 @@
-﻿using UnityEngine;
+﻿using System.Collections;
+using UnityEngine;
 
 [RequireComponent(typeof(Rigidbody2D))]
 
 public class Player2DControl : MonoBehaviour
 {
-    public enum ProjectAxis { onlyX = 0, xAndY = 1 };
-    public ProjectAxis projectAxis = ProjectAxis.onlyX;
-    public float speed = 150;
-    public float addForce = 7;
-    public KeyCode leftButton = KeyCode.A;
-    public KeyCode rightButton = KeyCode.D;
-    public KeyCode upButton = KeyCode.W;
-    public KeyCode downButton = KeyCode.S;
-    public bool isFacingRight = true;
-    private Vector3 direction;
-    private float vertical;
-    private float horizontal;
-    private Rigidbody2D rb;
+    [SerializeField]
+    private float speed = 7;
+    [SerializeField]
+    private float addForce = 15;
+    [SerializeField]
+    private KeyCode downButton = KeyCode.S;
+    [SerializeField]
+    private KeyCode jumpButton = KeyCode.Space;
+    [SerializeField]
+    private bool isFacingRight = true;
 
+
+    private float vertical;
+
+    private Rigidbody2D body;
+    private bool jump;
+    private Animator animator;
+    private int _playerObject, _platformObject;
+    private bool _jumpDown = false;
 
     void Start()
     {
-        rb = GetComponent<Rigidbody2D>();
-        rb.fixedAngle = true;
+        _playerObject = LayerMask.NameToLayer("Player");
+        _platformObject = LayerMask.NameToLayer("Platform");
+        body = GetComponent<Rigidbody2D>();
+        animator = GetComponent<Animator>();
+        body.freezeRotation = true;
+    }
 
-        if (projectAxis == ProjectAxis.xAndY)
+    void OnCollisionStay2D(Collision2D coll)
+    {
+        if (coll.transform.tag == "ground")
         {
-            rb.gravityScale = 0;
-            rb.drag = 10;
+            body.drag = 10;
+            jump = true;
+            animator.SetBool("Jump", false);
+        }
+    }
+
+    void OnCollisionExit2D(Collision2D coll)
+    {
+        if (coll.transform.tag == "ground")
+        {
+            body.drag = 0;
+            animator.SetBool("Jump", true);
+            jump = false;
         }
     }
 
     void FixedUpdate()
     {
-        rb.AddForce(direction * rb.mass * speed);
+        PlatformJump();
+        var horizontal = Input.GetAxis("Horizontal");
 
-        if (Mathf.Abs(rb.velocity.x) > speed / 100f)
+        body.velocity = new Vector2(Input.GetAxis("Horizontal") * speed, body.velocity.y);
+
+        if (Input.GetKey(jumpButton) && jump)
         {
-            rb.velocity = new Vector2(Mathf.Sign(rb.velocity.x) * speed / 100f, rb.velocity.y);
-        }
-        if (Mathf.Abs(rb.velocity.y) > speed / 100f)
-        {
-            rb.velocity = new Vector2(rb.velocity.x, Mathf.Sign(rb.velocity.y) * speed / 100f);
+            body.velocity = (new Vector2(body.velocity.x, addForce));
         }
 
+        if (horizontal > 0 && !isFacingRight) Flip(); else if (horizontal < 0 && isFacingRight) Flip();
+    }
+    private void PlatformJump()
+    {
+        if (Input.GetKey(downButton))
+        {
+            StartCoroutine("PlatformIgnor");
+        }
+        if (body.velocity.y > 0.1f || _jumpDown)
+        {
+            Physics2D.IgnoreLayerCollision(_playerObject, _platformObject, true);
+        }
+        else
+        {
+            Physics2D.IgnoreLayerCollision(_playerObject, _platformObject, false);
+        }
+
+    }
+    private IEnumerator PlatformIgnor()
+    {
+        _jumpDown = true;
+        Physics2D.IgnoreLayerCollision(_playerObject, _platformObject, true);
+        yield return new WaitForSeconds(0.7f);
+        Physics2D.IgnoreLayerCollision(_playerObject, _platformObject, false);
+        _jumpDown = false;
     }
 
     void Flip()
     {
+
         isFacingRight = !isFacingRight;
         Vector3 theScale = transform.localScale;
         theScale.x *= -1;
         transform.localScale = theScale;
+
     }
 
     void Update()
     {
-        if (Input.GetKey(upButton)) vertical = 1;
-        else if (Input.GetKey(downButton)) vertical = -1; else vertical = 0;
+        Animation();
+    }
 
-        if (Input.GetKey(leftButton)) horizontal = -1;
-        else if (Input.GetKey(rightButton)) horizontal = 1; else horizontal = 0;
+    private void Animation()
+    {
+        animator.SetFloat("Speed", Mathf.Abs(body.velocity.x));
 
-        direction = new Vector2(horizontal, vertical);
-
-
-        if (horizontal > 0 && !isFacingRight) Flip(); else if (horizontal < 0 && isFacingRight) Flip();
+        //if (Mathf.Abs(body.velocity.y) > 0.5)
+        //    animator.SetBool("Jump", true);
+        //else
+        //    animator.SetBool("Jump", false);
     }
 }
